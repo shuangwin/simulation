@@ -226,11 +226,10 @@ void BulkSendApplication::DataSend (Ptr<Socket>, uint32_t)
   std::cout<<"BulkSend---DataSend at "<<Simulator::Now ().GetSeconds ()<<std::endl;
   
   
-  if (m_connected)
-    {// Only send new data if the connection has completed
+  //if (m_connected)
+     // Only send new data if the connection has completed
       std::cout<<"BulkSend---when connected,DataSend at "<<Simulator::Now ().GetSeconds ()<<std::endl;
       SendData ();
-    }
     
 }
 

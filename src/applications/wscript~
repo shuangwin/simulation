@@ -20,7 +20,6 @@ def build(bld):
         'model/v4ping.cc',
         'model/application-packet-probe.cc',
         'model/request.cc',
-        'model/content-server.cc',
         'helper/bulk-send-helper.cc',
         'helper/on-off-helper.cc',
         'helper/packet-sink-helper.cc',
@@ -30,7 +29,6 @@ def build(bld):
         'helper/v4ping-helper.cc',
         'helper/radvd-helper.cc',
         'helper/request-helper.cc',
-        'helper/content-server-helper.cc',
         ]
 
     applications_test = bld.create_ns3_module_test_library('applications')
@@ -58,7 +56,6 @@ def build(bld):
         'model/v4ping.h',
         'model/application-packet-probe.h',
         'model/request.h',
-        'model/content-server.h',
         'helper/bulk-send-helper.h',
         'helper/on-off-helper.h',
         'helper/packet-sink-helper.h',
@@ -68,7 +65,6 @@ def build(bld):
         'helper/v4ping-helper.h',
         'helper/radvd-helper.h',
         'helper/request-helper.h',
-        'helper/content-server-helper.h',
         ]
 
     bld.ns3_python_bindings()
