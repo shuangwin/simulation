@@ -244,7 +244,7 @@ void ContentServer::HandleRead (Ptr<Socket> socket)
            //std::cout<<"The m_contentBytes= "<< m_contentBytes<< std::endl;
             
            linknew.socket = socket;
-           linknew.socket->SetSendCallback (MakeCallback (&ContentServer::DataSend, this));
+           //linknew.socket->SetSendCallback (MakeCallback (&ContentServer::DataSend, this));
            LinkList.push_back(linknew);
            SendData (linknew.socket);
         

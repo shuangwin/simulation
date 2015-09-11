@@ -90,11 +90,9 @@ Request::Request ()
 {
   NS_LOG_FUNCTION (this);
   m_sent = 0;
-  m_socket = 0;
-  m_sendEvent = EventId ();
-  
-  //add 
-  m_connected = false;
+  //m_socket = 0;
+  //m_sendEvent = EventId ();
+  m_socCreateEvent = EventId (); 
 }
 
 Request::~Request ()
@@ -138,41 +136,10 @@ Request::StartApplication (void)
 {
   NS_LOG_FUNCTION (this);
   std::cout<<"The UE starts at "<<Simulator::Now ().GetSeconds ()<<std::endl;
-  
-  
-  if (m_socket == 0)
-    {
-      TypeId tid = TypeId::LookupByName ("ns3::TcpSocketFactory");
-      m_socket = Socket::CreateSocket (GetNode (), tid); //可在随机时间点创建socket
-      if (Ipv4Address::IsMatchingType(m_peerAddress) == true)
-        {
-          m_socket->Bind ();
-          m_socket->Connect (InetSocketAddress (Ipv4Address::ConvertFrom(m_peerAddress), m_peerPort));
-        }
-      else if (Ipv6Address::IsMatchingType(m_peerAddress) == true)
-        {
-          m_socket->Bind6 ();
-          m_socket->Connect (Inet6SocketAddress (Ipv6Address::ConvertFrom(m_peerAddress), m_peerPort));
-        }
-    }
-
-  //m_socket->SetRecvCallback (MakeNullCallback<void, Ptr<Socket> > ());
-  m_socket->SetRecvCallback (MakeCallback (&Request::HandleRead, this));
-  m_socket->SetConnectCallback (
-        MakeCallback (&Request::ConnectionSucceeded, this),
-        MakeCallback (&Request::ConnectionFailed, this)); 
-        
-  m_socket->SetCloseCallbacks (
-    MakeCallback (&Request::HandlePeerClose, this),
-    MakeCallback (&Request::HandlePeerError, this));
-  
-  if (m_connected)
-    { // Only send new data if the connection has completed
-      std::cout<<"m_connected= "<< m_connected<<"socket is ready"<<std::endl;
-      m_sendEvent = Simulator::Schedule (Seconds (0.0), &Request::Send, this);
-    }
+  m_socCreateEvent = Simulator::Schedule (Seconds (2), &Request::randomSocketCreat, this); //todo: 开始时间随机 
 
 }
+
 
 void
 Request::StopApplication (void)
@@ -186,8 +153,7 @@ void Request::ConnectionSucceeded (Ptr<Socket> socket)
 {
   NS_LOG_FUNCTION (this << socket);
   std::cout<<"The tcp client connect successful at "<<(Simulator::Now ()).GetSeconds ()<<std::endl;
-  m_connected = true;
-  m_sendEvent = Simulator::Schedule (Seconds (0.0), &Request::Send, this);
+  Send(socket);
   
 }
 
@@ -200,10 +166,9 @@ void Request::ConnectionFailed (Ptr<Socket> socket)
 
 
 void
-Request::Send (void)
+Request::Send (Ptr<Socket> socket)
 {
   NS_LOG_FUNCTION (this);
-  NS_ASSERT (m_sendEvent.IsExpired ());
   SeqTsHeader seqTs;
   seqTs.SetSeq (m_sent);
   
@@ -224,7 +189,7 @@ Request::Send (void)
       peerAddressStringStream << Ipv6Address::ConvertFrom (m_peerAddress);
     }
 
-  if ((m_socket->Send (p)) >= 0)
+  if ((socket->Send (p)) >= 0)
     {
       ++m_sent;
       NS_LOG_INFO ("TraceDelay TX " << m_size << " bytes to "
@@ -238,11 +203,8 @@ Request::Send (void)
       NS_LOG_INFO ("Error while sending " << m_size << " bytes to "
                                           << peerAddressStringStream.str ());
     }
-
-  if (m_sent < m_count)
-    {
-      m_sendEvent = Simulator::Schedule (m_interval, &Request::Send, this);
-    }
+    
+  
 } //Send
 
 void Request::HandleRead (Ptr<Socket> socket)
@@ -275,10 +237,27 @@ void Request::HandleRead (Ptr<Socket> socket)
 
 void Request::HandlePeerClose (Ptr<Socket> socket)
 {
+  //Close the socket and erase the socket in the m_socketList
   NS_LOG_FUNCTION (this << socket);
   socket->Close();
-  delete m_socket;
+  std::list<Link>::iterator iter;
+  for (iter = LinkList.begin(); iter != LinkList.end(); ++iter)
+  {
+      if(iter->socket == socket)
+      {
+          std::cout<<"There's a socket in m_socketList, going to delete it"<<std::endl;
+          break;
+      }        
+  }
   
+  if(iter == LinkList.end() && iter->socket!= socket)
+  {
+       std::cout<<"There is no inter->socket == socket in m_socketList!"<<std::endl;
+       return;  //return语句！ 强制结束当前函数
+  }
+  
+  m_socketList.erase(iter);
+ 
 }
 
 void Request::HandlePeerError (Ptr<Socket> socket)
@@ -286,5 +265,36 @@ void Request::HandlePeerError (Ptr<Socket> socket)
   NS_LOG_FUNCTION (this << socket);
 }
 
+
+void randomSocketCreat()
+{
+  NS_LOG_FUNCTION (this);
+  NS_ASSERT (m_socCreateEvent.IsExpired ());
+  
+  //Create a socket and send a request 
+  Ptr<Socket> socketToUse = 0;
+  TypeId tid = TypeId::LookupByName ("ns3::TcpSocketFactory");
+  socketToUse = Socket::CreateSocket (GetNode (), tid); 
+  if (Ipv4Address::IsMatchingType(m_peerAddress) == true)
+  {
+    socketToUse->Bind ();
+    socketToUse->Connect (InetSocketAddress (Ipv4Address::ConvertFrom(m_peerAddress), m_peerPort));
+  }
+  
+  
+  socketToUse->SetRecvCallback (MakeCallback (&Request::HandleRead, this));
+  socketToUse->SetConnectCallback (
+        MakeCallback (&Request::ConnectionSucceeded, this),
+        MakeCallback (&Request::ConnectionFailed, this)); 
+        
+  socketToUse->SetCloseCallbacks (
+    MakeCallback (&Request::HandlePeerClose, this),
+    MakeCallback (&Request::HandlePeerError, this)); 
+    
+  m_socketList.push_back(socketToUse); 
+  
+  //m_socCreateEvent = Simulator::Schedule (Seconds (2), &Request::randomSocketCreat, this); //wait and send another request
+  
+}
 
 } // Namespace ns3

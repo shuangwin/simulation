@@ -71,7 +71,7 @@ public:
    * \param port remote port
    */
   void SetRemote (Address ip, uint16_t port);
-  Ptr<Socket> m_socket; //!< Socket
+  
 
 protected:
   virtual void DoDispose (void);
@@ -84,26 +84,29 @@ private:
   /**
    * \brief Send a packet
    */
-  void Send (void);
+  void Send (Ptr<Socket>);
 
   uint32_t m_count; //!< Maximum number of packets the application will send
   Time m_interval; //!< Packet inter-send time
   uint32_t m_size; //!< Size of the sent packet (including the SeqTsHeader)
 
   uint32_t m_sent; //!< Counter for sent packets,可用于统计总的请求数，或控制请求到达分布
-  //Ptr<Socket> m_socket; //!< Socket 声明成Public的
+  //Ptr<Socket> m_socket; //!< Socket 
   Address m_peerAddress; //!< Remote peer address
   uint16_t m_peerPort; //!< Remote peer port
-  EventId m_sendEvent; //!< Event to send the next packet
+  //EventId m_sendEvent; //!< Event to send the next packet
   
   //add
   void ConnectionSucceeded (Ptr<Socket> socket); // add fot tcp socket referenced to bulksendapplication
   void ConnectionFailed (Ptr<Socket> socket); //add fot tcp socket referenced to bulksendapplication
-  bool    m_connected;
+  //bool    m_connected;
   void HandleRead (Ptr<Socket> socket);
   uint32_t        m_totalRx;
   void HandlePeerClose (Ptr<Socket> socket);
   void HandlePeerError (Ptr<Socket> socket);
+  std::list<Ptr<Socket> > m_socketList; //matain the sockets create to request contents at different time 
+  EventId  m_socCreat; //EventList to creat a socket randomly during the simulation time
+  void randomSocketCreat(); //creat a socket and send a request to server every time the m_socketCreat event expired
 
 };
 
