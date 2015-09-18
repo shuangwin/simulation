@@ -340,7 +340,7 @@ void ContentServer::SendData(Ptr<Socket> socket)
         if(*socket_iter == socket)
         {
           m_socketList.erase(socket_iter);
-          std::cout<<"Have erase the socket_iter in m_socketList!"<<std::endl;
+          std::cout<<"Content-server---Have erase the socket_iter in m_socketList!"<<std::endl;
           break;
         }
           

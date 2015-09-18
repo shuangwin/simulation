@@ -293,7 +293,7 @@ protected:
    */
   uint16_t m_cellId;
   
-  //TracedValue<uint32_t>  m_macTotalSent; //JMS add to trace the total sent for the calculation of throughput 
+  TracedValue<uint32_t>  m_macTotalSent; //JMS add to trace the total sent for the calculation of throughput 
 
 }; // end of `class LtePhy`
 

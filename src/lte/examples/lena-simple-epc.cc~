@@ -116,7 +116,7 @@ main (int argc, char *argv[])
         Ptr<Node> node = enbNodes.Get(i);
         Ptr<MobilityModel> position = node->GetObject<MobilityModel>();
         Vector pos = position->GetPosition();
-        std::cout<< "The "<<i<<" eNB's position is "<<pos.x<<" "<<pos.y<<" "<<pos.z<<std::endl;
+        std::cout<< "The "<<i<<"eNB's position is "<<pos.x<<" "<<pos.y<<" "<<pos.z<<std::endl;
     }
     
     
@@ -125,7 +125,7 @@ main (int argc, char *argv[])
         Ptr<Node> node = ueNodes.Get(i);
         Ptr<MobilityModel> position = node->GetObject<MobilityModel>();
         Vector pos = position->GetPosition();
-        std::cout<< "The "<<i<<" ue's position is "<<pos.x<<" "<<pos.y<<" "<<pos.z<<std::endl;
+        std::cout<< "The "<<i<<"ue's position is "<<pos.x<<" "<<pos.y<<" "<<pos.z<<std::endl;
     }
   //各个节点的位置坐标
   

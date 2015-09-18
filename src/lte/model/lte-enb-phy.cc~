@@ -416,8 +416,8 @@ void
 LteEnbPhy::DoSendMacPdu (Ptr<Packet> p)
 {
   NS_LOG_FUNCTION (this);
-  std::cout<<"LteEnbPhy("<< this<<")"<<"::DoSendMacPdu(Ptr<Packet> p)----pass a packet as a para to SetMacPdu(),size: "\
-  << p->GetSize()<< " at "<<Simulator::Now ().GetSeconds ()<<std::endl; // JMS
+  std::cout<<"LteEnbPhy("<< this<<")"<<"::SetMacPdu(Ptr<Packet> p)----add a packet to the queue,size: "<< p->GetSize()<< \
+  " at "<<Simulator::Now ().GetSeconds ()<<std::endl; // JMS
   SetMacPdu (p);
 }
 

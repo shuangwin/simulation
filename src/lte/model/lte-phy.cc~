@@ -191,7 +191,7 @@ void
 LtePhy::SetMacPdu (Ptr<Packet> p)
 {
   m_packetBurstQueue.at (m_packetBurstQueue.size () - 1)->AddPacket (p);
-  //std::cout<<"Ltephy("<< this<<")"<<"::SetMacPdu(Ptr<Packet> p)----add a packet to the queue,size: "<< p->GetSize()<< 
+  //std::cout<<"Ltephy("<< this<<")"<<"::SetMacPdu(Ptr<Packet> p)----add a packet to the queue,size: "<< p->GetSize()<< \
   //" at "<<Simulator::Now ().GetSeconds ()<<std::endl; // JMS
    
 }

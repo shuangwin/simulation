@@ -55,4 +55,6 @@ def build(bld):
     obj = bld.create_ns3_program('lena-uplink-power-control',
                                  ['lte'])
     obj.source = 'lena-uplink-power-control.cc'
-  
+    obj = bld.create_ns3_program('lena-simple-epc-jms',
+                                 ['lte'])
+    obj.source = 'lena-simple-epc-jms.cc'

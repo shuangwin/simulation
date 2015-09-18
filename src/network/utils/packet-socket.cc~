@@ -276,7 +276,7 @@ PacketSocket::GetMinMtu (PacketSocketAddress ad) const
   if (ad.IsSingleDevice ())
     {
       Ptr<NetDevice> device = m_node->GetDevice (ad.GetSingleDevice ());
-      //std::cout<<"PacketSocket::GetMinMtu():---------device->GetMtu():"<<device->GetMtu ()<<std::endl;
+      std::cout<<"PacketSocket::GetMinMtu():---------device->GetMtu():"<<device->GetMtu ()<<std::endl;
       return device->GetMtu ();
       
     }
@@ -288,7 +288,7 @@ PacketSocket::GetMinMtu (PacketSocketAddress ad) const
           Ptr<NetDevice> device = m_node->GetDevice (i);
           minMtu = std::min (minMtu, (uint32_t)device->GetMtu ());
         }
-      //std::cout<<"PacketSocket::GetMinMtu:----------minMtu:"<<minMtu<<std::endl;
+      std::cout<<"PacketSocket::GetMinMtu:----------minMtu:"<<minMtu<<std::endl;
       return minMtu;
     }
 }

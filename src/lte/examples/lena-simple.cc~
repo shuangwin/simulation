@@ -49,7 +49,7 @@ int main (int argc, char *argv[])
   Ptr<LteHelper> lteHelper = CreateObject<LteHelper> ();
 
   // Uncomment to enable logging
-//  lteHelper->EnableLogComponents ();
+  lteHelper->EnableLogComponents ();
 
   // Create Nodes: eNodeB and UE
   NodeContainer enbNodes;
@@ -61,7 +61,7 @@ int main (int argc, char *argv[])
   MobilityHelper mobility;
   mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
   mobility.Install (enbNodes);
-  BuildingsHelper::Install (enbNodes);
+  BuildingsHelper::Install (enbNodes);  //BuildingsHelper?? JMS8.29
   mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
   mobility.Install (ueNodes);
   BuildingsHelper::Install (ueNodes);
@@ -79,6 +79,7 @@ int main (int argc, char *argv[])
   lteHelper->Attach (ueDevs, enbDevs.Get (0));
 
   // Activate a data radio bearer
+  //关于QCI，GBR／NGBR，有待学习
   enum EpsBearer::Qci q = EpsBearer::GBR_CONV_VOICE;
   EpsBearer bearer (q);
   lteHelper->ActivateDataRadioBearer (ueDevs, bearer);

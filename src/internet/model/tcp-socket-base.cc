@@ -1364,7 +1364,7 @@ TcpSocketBase::ProcessSynRcvd (Ptr<Packet> packet, const TcpHeader& tcpHeader,
       // As this connection is established, the socket is available to send data now
       if (GetTxAvailable () > 0)
         {
-          std::cout<<"tcp-socket-base.cc---ProcessSynRcvd---GetTxAvailable:"<<GetTxAvailable ()<<std::endl;
+          //std::cout<<"tcp-socket-base.cc---ProcessSynRcvd---GetTxAvailable:"<<GetTxAvailable ()<<std::endl;
           NotifySend (GetTxAvailable ());
         }
     }

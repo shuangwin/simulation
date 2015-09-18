@@ -831,6 +831,7 @@ TcpSocketBase::DoClose (void)
       // send FIN+ACK to close the peer
       SendEmptyPacket (TcpHeader::FIN | TcpHeader::ACK);
       NS_LOG_INFO ("CLOSE_WAIT -> LAST_ACK");
+      std::cout<<"TcpSocketBase ("<< this <<" )"<<":: DoClose(): CLOSE_WAIT -> LAST_ACK "<<std::endl;  //JMS
       m_state = LAST_ACK;
       break;
     case SYN_SENT:

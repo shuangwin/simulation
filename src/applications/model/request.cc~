@@ -34,6 +34,8 @@
 #include <cstdio>
 
 #include "ns3/ipv4.h"
+#include <ns3/random-variable-stream.h>  //add 9.14
+#include <ns3/double.h>
 
 
 
@@ -136,7 +138,15 @@ Request::StartApplication (void)
 {
   NS_LOG_FUNCTION (this);
   std::cout<<"The UE starts at "<<Simulator::Now ().GetSeconds ()<<std::endl;
-  m_socCreateEvent = Simulator::Schedule (Seconds (2), &Request::randomSocketCreat, this); //todo: 开始时间随机 
+  double mean = 3.14;
+  double bound = 10;
+  
+  Ptr<ExponentialRandomVariable> x = CreateObject<ExponentialRandomVariable> ();
+  x->SetAttribute ("Mean", DoubleValue (mean));
+  x->SetAttribute ("Bound", DoubleValue (bound));
+  double value = x->GetValue ();
+  
+  m_socCreateEvent = Simulator::Schedule (Seconds (value), &Request::randomSocketCreat, this); //todo: 开始时间随机 
 
 }
 
@@ -145,7 +155,7 @@ void
 Request::StopApplication (void)
 {
   NS_LOG_FUNCTION (this);
-  Simulator::Cancel (m_sendEvent);
+  Simulator::Cancel (m_socCreateEvent);
 }
 
 
@@ -240,19 +250,19 @@ void Request::HandlePeerClose (Ptr<Socket> socket)
   //Close the socket and erase the socket in the m_socketList
   NS_LOG_FUNCTION (this << socket);
   socket->Close();
-  std::list<Link>::iterator iter;
-  for (iter = LinkList.begin(); iter != LinkList.end(); ++iter)
+  std::list<Ptr<Socket> >::iterator iter;
+  for (iter = m_socketList.begin(); iter != m_socketList.end(); ++iter)
   {
-      if(iter->socket == socket)
+      if(*iter == socket)
       {
-          std::cout<<"There's a socket in m_socketList, going to delete it"<<std::endl;
+          std::cout<<"Request---There's a socket in m_socketList, going to delete it"<<std::endl;
           break;
       }        
   }
   
-  if(iter == LinkList.end() && iter->socket!= socket)
+  if(iter == m_socketList.end() && *iter!= socket)
   {
-       std::cout<<"There is no inter->socket == socket in m_socketList!"<<std::endl;
+       std::cout<<"Request---There is no inter->socket == socket in m_socketList!"<<std::endl;
        return;  //return语句！ 强制结束当前函数
   }
   
@@ -266,11 +276,12 @@ void Request::HandlePeerError (Ptr<Socket> socket)
 }
 
 
-void randomSocketCreat()
+void Request::randomSocketCreat()
 {
-  NS_LOG_FUNCTION (this);
-  NS_ASSERT (m_socCreateEvent.IsExpired ());
+  NS_LOG_FUNCTION (this<<Simulator::Now ().GetSeconds ());
   
+  NS_ASSERT (m_socCreateEvent.IsExpired ());
+
   //Create a socket and send a request 
   Ptr<Socket> socketToUse = 0;
   TypeId tid = TypeId::LookupByName ("ns3::TcpSocketFactory");
@@ -293,7 +304,16 @@ void randomSocketCreat()
     
   m_socketList.push_back(socketToUse); 
   
-  //m_socCreateEvent = Simulator::Schedule (Seconds (2), &Request::randomSocketCreat, this); //wait and send another request
+  
+  
+  double mean = 30;
+  double bound = 50;
+  
+  Ptr<ExponentialRandomVariable> x = CreateObject<ExponentialRandomVariable> ();
+  x->SetAttribute ("Mean", DoubleValue (mean));
+  x->SetAttribute ("Bound", DoubleValue (bound));
+  double value = x->GetValue ();
+  //m_socCreateEvent = Simulator::Schedule (Seconds (value), &Request::randomSocketCreat, this); //wait and send another request
   
 }
 

@@ -432,8 +432,6 @@ private:
    * PhyTransmissionStatParameters.
    */
   TracedCallback<PhyTransmissionStatParameters> m_dlPhyTransmission;
-  
-  
 
 }; // end of `class LteEnbPhy`
 

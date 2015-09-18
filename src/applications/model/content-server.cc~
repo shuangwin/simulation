@@ -287,17 +287,15 @@ void ContentServer::SendData(Ptr<Socket> socket)
       {
           std::cout<<"There's a socket in LinkList!"<<std::endl;
           break;
-      }
-      
-          
+      }        
   }
     
     
-    if(iter == LinkList.end() && iter->socket!= socket)
-    {
-          std::cout<<"There is no inter->socket == socket in LinkList!"<<std::endl;
-          return;  //return语句！ 强制结束当前函数
-    }
+  if(iter == LinkList.end() && iter->socket!= socket)
+  {
+       std::cout<<"There is no inter->socket == socket in LinkList!"<<std::endl;
+       return;  //return语句！ 强制结束当前函数
+  }
     
         
         

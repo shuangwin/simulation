@@ -297,7 +297,7 @@ Socket::NotifySend (uint32_t spaceAvailable)
   NS_LOG_FUNCTION (this << spaceAvailable);
   if (!m_sendCb.IsNull ())
     {
-      //std::cout<<"Socket.cc---NotifySend()"<<std::endl;
+      std::cout<<"Socket.cc---NotifySend()---m_sendCb is not null"<<std::endl;
       m_sendCb (this, spaceAvailable);
     }
 }
