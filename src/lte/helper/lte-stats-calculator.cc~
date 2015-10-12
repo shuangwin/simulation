@@ -98,9 +98,6 @@ LteStatsCalculator::GetDlPktFilename (void)
   return m_dlPktOutputFilename;
 }
 
-//JMS add finish
-
-
 
 bool
 LteStatsCalculator::ExistsImsiPath (std::string path)

@@ -1166,7 +1166,7 @@ LteHelper::EnableDlTxPhyTraces (void)
 
 //JMS add the connect function for tracesource 'm_dlPackets' and sink 'DlPacketsCallback'
 void 
-LteHelper::EnableDlPacketTraces (void)
+EnableDlPacketTraces (void)
 {
    Config::Connect ("/NodeList/*/DeviceList/*/LteEnbPhy/DlPackets",
                    MakeBoundCallback (&PhyTxStatsCalculator::DlPacketsCallback, m_phyTxStats)); 

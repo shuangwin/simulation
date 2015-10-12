@@ -525,9 +525,11 @@ public:
   /**
    * JMS: Enable trace sinks for DL packet transmission.
    */
-  void EnableDlPacketTraces (void);
+  void EnableDlTxPhyTraces (void);
   
-   
+  
+  
+  
 
   /**
    * Enable trace sinks for UL transmission PHY layer.

@@ -83,7 +83,6 @@ public:
   
   //JMS add 
   void SetDlPktFilename (std::string outputFilename);
-  std::string GetDlPktFilename (void);
   
   
   //JMS add finish

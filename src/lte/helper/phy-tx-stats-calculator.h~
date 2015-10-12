@@ -113,8 +113,7 @@ public:
   void UlPhyTransmission (PhyTransmissionStatParameters params);
 
 
-  //JMS add 
-  void DlPackets(PacketsFromMacToPhy params);
+  //JMS add the 
   
   /** 
    * trace sink

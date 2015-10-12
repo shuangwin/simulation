@@ -233,8 +233,7 @@ PhyTxStatsCalculator::DlPacketsCallback (Ptr<PhyTxStatsCalculator> phyTxStats,
 }                     
 
 
-void
-PhyTxStatsCalculator::DlPackets(PacketsFromMacToPhy params)
+void DlPackets(PacketsFromMacToPhy params)
 {
     
     std::cout<<"In the sink function!"<<std::endl;
