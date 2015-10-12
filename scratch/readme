@@ -1,0 +1,2 @@
+lena-simple-epc-jms.cc: tcp client,server, 10ues,仿真时间60s，指数分布请求到达，测量eNB下行链路吞吐量变化图 //until 15.9.30
+lena-second 基于1,请求到达按照运营商数据，仿真时间24小时，48个time slots //create on 10.12
