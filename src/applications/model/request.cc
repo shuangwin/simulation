@@ -47,6 +47,8 @@
 *9.2
 *服务器端已经完善
 *客户端：之前是req和packetsink分别创建socket来发送请求和接收数据，接下来合并成一个
+*10.12 
+*客户端的服务请求按照trace中聚合流量的规律发出
 */
 namespace ns3 {
 
@@ -183,8 +185,34 @@ Request::Send (Ptr<Socket> socket)
   seqTs.SetSeq (m_sent);
   
   uint8_t buf[2];
-  buf[0]='1';
-  buf[1]='2';
+  
+  
+  //JMS add the uniform random variable to create the random content type in the user request...start
+  double min = 0;
+  double max = 1;
+  Ptr<UniformRandomVariable> x = CreateObject<UniformRandomVariable> ();
+  x->SetAttribute ("Min", DoubleValue (min));
+  x->SetAttribute ("Max", DoubleValue (max));
+  double value = x->GetValue ();
+  
+  //std::cout<<"request.cc----------------uniformrandom--------"<<value<<(Simulator::Now ()).GetSeconds ()<<std::endl;
+  if(value >0 && value <=0.2)
+  {
+    buf[0] = '1';
+  }
+  else if (value >0.3 && value <= 0.8)
+  {
+    buf[0] = '2';
+  }
+  else
+  {
+    buf[0] = '3';
+  }
+ 
+  //JMS add the uniform random variable to create the random content type in the user request...end
+  
+  //buf[0]='1'; //content name, JMS 10.19
+  buf[1]='2'; //deadline,selected based on the prices, same to the behavior model in TUBE and Async JMS 10.19
   Ptr<Packet> p = Create<Packet> (buf,2);
   //Ptr<Packet> p = Create<Packet> (m_size-(8+4)); // 8+4 : the size of the seqTs header
   p->AddHeader (seqTs);
@@ -285,7 +313,7 @@ void Request::randomSocketCreat()
   //Create a socket and send a request 
   Ptr<Socket> socketToUse = 0;
   TypeId tid = TypeId::LookupByName ("ns3::TcpSocketFactory");
-  socketToUse = Socket::CreateSocket (GetNode (), tid); 
+  socketToUse = Socket::CreateSocket (GetNode (), tid);  
   if (Ipv4Address::IsMatchingType(m_peerAddress) == true)
   {
     socketToUse->Bind ();
@@ -304,17 +332,221 @@ void Request::randomSocketCreat()
     
   m_socketList.push_back(socketToUse); 
   
+  double now_minute = Simulator::Now().GetMinutes(); //取仿真时间，决定下个req与刚发出去的req之间的间隔均值（的倒数）
+  double now_slotnum = floor(now_minute/30); //slot number start from 0 to 5; simtime = 60 mins
+  //std::cout<<"Request.cc----now_minute = "<< now_minute<<", "<<"now_slotnum = "<< now_slotnum<<std::endl;
+  //std::cout<<"request.cc---- now_slotnum = "<< floor(now_slotnum)<<std::endl; //floor() 向下取整
+  double mean,bound;
   
-  /*
-  double mean = 30;
-  double bound = 50;
+  switch ((int)now_slotnum)
+  {
+    case 0 :
+    {
+        std::cout<<"request.cc in case 0 "<<std::endl;
+        mean = 24;
+        bound = 26;
+        break;
+    }
+    
+    case 1 :
+    {
+        std::cout<<"request.cc in case 1 "<<std::endl;
+        mean = 19.6;
+        bound = 22.8;
+        break;
+    }
+    
+    case 2 :
+    {
+        std::cout<<"request.cc in case 2 "<<std::endl;
+        mean = 24;
+        bound = 26 ;
+        break;
+    }
+    
+    case 3 :
+    {
+        std::cout<<"request.cc in case 3 "<<std::endl;
+        mean = 25.2;
+        bound = 26.4;
+        break;
+    }
+    
+    case 4 :
+    {
+        std::cout<<"request.cc in case 4 "<<std::endl;
+        mean = 25.2;
+        bound = 26.4;
+        break;
+    }
+    
+    case 5 :
+    {
+        std::cout<<"request.cc in case 5 "<<std::endl;
+        mean = 22;
+        bound = 24;
+        break;
+    }
+    
+    
+    case 6 :
+    {
+        std::cout<<"request.cc in case 6 "<<std::endl;
+        mean = 15;
+        bound = 18;
+        break;
+    }
+    
+    case 7 :
+    {
+        std::cout<<"request.cc in case 7 "<<std::endl;
+        mean = 14;
+        bound = 15;
+        break;
+    }
+    
+    case 8 :
+    {
+        std::cout<<"request.cc in case 8 "<<std::endl;
+        mean = 11;
+        bound = 12;
+        break;
+    }
+    
+    case 9 :
+    {
+        std::cout<<"request.cc in case 9 "<<std::endl;
+        mean = 9;
+        bound = 10;
+        break;
+    }
+    
+    case 10 :
+    {
+        std::cout<<"request.cc in case 10 "<<std::endl;
+        mean = 7;
+        bound = 8;
+        break;
+    }
+    
+    case 11 :
+    {
+        std::cout<<"request.cc in case 11 "<<std::endl;
+        mean = 6;
+        bound = 7;
+        break;
+    }
+    
+    case 12 :
+    {
+        std::cout<<"request.cc in case 12 "<<std::endl;
+        mean = 5;
+        bound = 6;
+        break;
+    }
+    
+    case 13 :
+    {
+        std::cout<<"request.cc in case 13 "<<std::endl;
+        mean = 3.5;
+        bound = 4.5;
+        break;
+    }
+    
+    case 14 :
+    {
+        std::cout<<"request.cc in case 14 "<<std::endl;
+        mean = 2.5;
+        bound = 3;
+        break;
+    }
+    
+    case 15 :
+    {
+        std::cout<<"request.cc in case 15 "<<std::endl;
+        mean = 2;
+        bound = 2.5;
+        break;
+    }
+    
+    case 16 :
+    {
+        std::cout<<"request.cc in case 16 "<<std::endl;
+        mean = 1;
+        bound = 1.5;
+        break;
+    }
+    
+    case 17 :
+    {
+        std::cout<<"request.cc in case 17 "<<std::endl;
+        mean = 0.4;
+        bound = 0.5;
+        break;
+    }
+    
+    
+    case 18 :
+    {
+        std::cout<<"request.cc in case 18 "<<std::endl;
+        mean = 0.3;
+        bound = 0.45;
+        break;
+    }
+    
+    case 19 :
+    {
+        std::cout<<"request.cc in case 19 "<<std::endl;
+        mean = 0.65;
+        bound = 0.7;
+        break;
+    }
+    
+    case 20 :
+    {
+        std::cout<<"request.cc in case 20 "<<std::endl;
+        mean = 0.95;
+        bound = 1;
+        break;
+    }
+    
+    case 21 :
+    {
+        std::cout<<"request.cc in case 21 "<<std::endl;
+        mean = 1.2;
+        bound = 1.3;
+        break;
+    }
+    
+    case 22 :
+    {
+        std::cout<<"request.cc in case 22 "<<std::endl;
+        mean = 1.3;
+        bound = 1.4;
+        break;
+    }
+    
+    case 23 :
+    {
+        std::cout<<"request.cc in case 23 "<<std::endl;
+        mean = 1.5;
+        bound = 1.6;
+        break;
+    }
+    
+    
+    
+  }
+  
+  //double mean = 10; origin 
+  //double bound = 20; origin
   
   Ptr<ExponentialRandomVariable> x = CreateObject<ExponentialRandomVariable> ();
   x->SetAttribute ("Mean", DoubleValue (mean));
   x->SetAttribute ("Bound", DoubleValue (bound));
   double value = x->GetValue ();
-  //m_socCreateEvent = Simulator::Schedule (Seconds (value), &Request::randomSocketCreat, this); //wait and send another request
-  */
+  m_socCreateEvent = Simulator::Schedule (Minutes(value), &Request::randomSocketCreat, this); //wait and send another request
+  
 }
 
 } // Namespace ns3

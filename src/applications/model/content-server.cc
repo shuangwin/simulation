@@ -224,18 +224,18 @@ void ContentServer::HandleRead (Ptr<Socket> socket)
                 case '1':
                     {
                         //std::cout<< "The requested type from "<<InetSocketAddress::ConvertFrom(from).GetIpv4 ()<<" is "<<"1"<<std::endl;
-                        linknew.contentBytes = 1024*5;
+                        linknew.contentBytes = 1024*5; //coast 100k，10s，至少的youtube视频
                         break;     
                     }
                  
                 case '2':
                     {
-                        linknew.contentBytes = 1024*20;
+                        linknew.contentBytes = 1024*20; //30M
                         break;    
                     }
                 case '3':
                     { 
-                        linknew.contentBytes = 1024*100; 
+                        linknew.contentBytes = 1024*100; //1G
                         break;
                     }
            
@@ -306,7 +306,7 @@ void ContentServer::SendData(Ptr<Socket> socket)
       
       //std::cout<< "iter->totBytes= "<<iter->totBytes<<"  iter->contentBytes= "<<iter->contentBytes<<std::endl;
       uint32_t toSend = m_sendSize;
-      toSend = std::min (m_sendSize, iter->contentBytes - iter->totBytes);
+      toSend = std::min (m_sendSize, iter->contentBytes - iter->totBytes);  //Bytes为单位
       Ptr<Packet> packet = Create<Packet> (toSend);
       
       int actual = iter->socket->Send (packet);

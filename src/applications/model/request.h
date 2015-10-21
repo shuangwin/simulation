@@ -105,7 +105,7 @@ private:
   void HandlePeerClose (Ptr<Socket> socket);
   void HandlePeerError (Ptr<Socket> socket);
   std::list<Ptr<Socket> > m_socketList; //matain the sockets create to request contents at different time 
-  EventId  m_socCreateEvent; //EventList to creat a socket randomly during the simulation time
+  EventId  m_socCreateEvent; //Event to creat a socket randomly during the simulation time
   void randomSocketCreat(); //creat a socket and send a request to server every time the m_socketCreat event expired
 
 };
