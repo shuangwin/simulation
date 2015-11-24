@@ -142,8 +142,8 @@ struct PhyTransmissionStatParameters
 
 struct PacketsFromMacToPhy
 {
-  double   m_time; // in millisecond
-  uint8_t  m_txMode;  /// the totoal bytes that mac have sent to phy till now
+  double   m_time; // in seconds
+  uint32_t  m_packet;  /// the bytes of packet that just sent
   
   /**
    *  TracedCallback signature.

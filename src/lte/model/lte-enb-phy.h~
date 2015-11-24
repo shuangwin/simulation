@@ -432,6 +432,10 @@ private:
    * PhyTransmissionStatParameters.
    */
   TracedCallback<PhyTransmissionStatParameters> m_dlPhyTransmission;
+  
+  TracedCallback<PhyTransmissionStatParameters> m_dlPackets; //JMS add as a trace source
+  
+  
 
 }; // end of `class LteEnbPhy`
 

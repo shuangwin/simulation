@@ -225,6 +225,10 @@ LteEnbPhy::GetTypeId (void)
                    PointerValue (),
                    MakePointerAccessor (&LteEnbPhy::GetUlSpectrumPhy),
                    MakePointerChecker <LteSpectrumPhy> ())
+    .AddTraceSource ("DlPackets",
+                     "DL packets' transmission statistics.",
+                     MakeTraceSourceAccessor (&LteEnbPhy::m_dlPackets),
+                     "ns3::PacketsFromMacToPhy::TracedCallback")
   ;
   return tid;
 }
@@ -419,6 +423,13 @@ LteEnbPhy::DoSendMacPdu (Ptr<Packet> p)
   std::cout<<"LteEnbPhy("<< this<<")"<<"::DoSendMacPdu(Ptr<Packet> p)----pass a packet as a para to SetMacPdu(),size: "\
   << p->GetSize()<< " at "<<Simulator::Now ().GetSeconds ()<<std::endl; // JMS
   SetMacPdu (p);
+  
+  //JMS add
+  PacketsFromMacToPhy params;
+  params.m_time = Simulator::Now ().GetSeconds ();
+  params.m_packet = p->GetSize();
+  m_dlPackets(params);
+  std::cout<< " LteEnbPhy::DoSendMacPdu()---The trace source has updated!"<<std::endl;
 }
 
 uint8_t

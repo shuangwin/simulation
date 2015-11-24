@@ -38,7 +38,7 @@ NS_OBJECT_ENSURE_REGISTERED (LtePhy);
 LtePhy::LtePhy ()
 {
   NS_LOG_FUNCTION (this);
-  std::cout<<"LtePhy---LtePhy()"<<std::endl; //JMS
+  //std::cout<<"LtePhy---LtePhy()"<<std::endl; //JMS
   NS_FATAL_ERROR ("This constructor should not be called");
 }
 

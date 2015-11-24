@@ -101,10 +101,22 @@ private:
   void ConnectionFailed (Ptr<Socket> socket); //add fot tcp socket referenced to bulksendapplication
   //bool    m_connected;
   void HandleRead (Ptr<Socket> socket);
-  uint32_t        m_totalRx;
+  //uint32_t        m_totalRx;
   void HandlePeerClose (Ptr<Socket> socket);
   void HandlePeerError (Ptr<Socket> socket);
-  std::list<Ptr<Socket> > m_socketList; //matain the sockets create to request contents at different time 
+  
+  
+  typedef struct _link
+  
+  {
+    Ptr<Socket>     socket;
+    uint32_t        contentBytes; //the total bytes of the content
+    uint32_t        totBytes;  //!< Total bytes received so far 
+  }Link;
+  
+  
+  std::list<Link> LinkListUE; //matain the sockets create to request contents at different time and the content info
+  
   EventId  m_socCreateEvent; //Event to creat a socket randomly during the simulation time
   void randomSocketCreat(); //creat a socket and send a request to server every time the m_socketCreat event expired
 

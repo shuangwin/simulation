@@ -224,18 +224,18 @@ void ContentServer::HandleRead (Ptr<Socket> socket)
                 case '1':
                     {
                         //std::cout<< "The requested type from "<<InetSocketAddress::ConvertFrom(from).GetIpv4 ()<<" is "<<"1"<<std::endl;
-                        linknew.contentBytes = 1024*100; //coast 100k，10s，至少的youtube视频
+                        linknew.contentBytes = 1024; //coast 100k，10s，至少的youtube视频
                         break;     
                     }
                  
                 case '2':
                     {
-                        linknew.contentBytes = 1024*1024*30; //30M
+                        linknew.contentBytes = 1024; //30M
                         break;    
                     }
                 case '3':
                     { 
-                        linknew.contentBytes = 1024*1024*1024; //1G
+                        linknew.contentBytes = 1024; //1G
                         break;
                     }
            
@@ -257,8 +257,50 @@ void ContentServer::HandleRead (Ptr<Socket> socket)
 void ContentServer::HandlePeerClose (Ptr<Socket> socket)
 {
   NS_LOG_FUNCTION (this << socket);
+  //JMS 10.20 when UE close first,then close the relate socket in linklist and accepted socket list...start
+  std::list<Ptr<Socket> >::iterator socket_iter;
+  for (socket_iter = m_socketList.begin(); socket_iter != m_socketList.end(); ++socket_iter)
+  {
+       if(*socket_iter == socket)
+       {
+          m_socketList.erase(socket_iter);
+          std::cout<<"Content-server---Have erase the socket_iter in m_socketList!"<<std::endl;
+          break;
+       }
+       
+       if(socket_iter == m_socketList.end() && *socket_iter!= socket)
+       {
+          std::cout<<"There is no *socket_iter == socket in m_socketList!"<<std::endl;
+          return;  //return语句！ 强制结束当前函数
+       }
+          
+  } 
+  
+  std::list<Link>::iterator iter;
+  for (iter = LinkList.begin(); iter != LinkList.end(); ++iter)
+  {
+      if(iter->socket == socket)
+      {
+          std::cout<<"There's a socket in LinkList to be closed!"<<std::endl;
+          LinkList.erase(iter);
+          break;
+      }        
+  }
+  
+  if(iter == LinkList.end() && iter->socket!= socket)
+  {
+       std::cout<<"There is no inter->socket == socket in LinkList to be closed!"<<std::endl;
+       return;  //return语句！ 强制结束当前函数
+  }
+  
+  
+  
+  
+  //JMS 10.20 when UE close first,then close the relate socket in linklist and accepted socket list...end 
+  
 }
- 
+
+
 void ContentServer::HandlePeerError (Ptr<Socket> socket)
 {
   NS_LOG_FUNCTION (this << socket);
@@ -324,7 +366,13 @@ void ContentServer::SendData(Ptr<Socket> socket)
         }
     }
     
+    if (iter->totBytes == iter->contentBytes)
+    {
+        //JMS waiting for user to receive all and close the socket
+        std::cout<<"Server has finished sending to socket"<<iter->socket<<std::endl;
+    }
     
+    #if 0
     if (iter->totBytes == iter->contentBytes)
     {
       
@@ -347,6 +395,7 @@ void ContentServer::SendData(Ptr<Socket> socket)
       }
       
     }
+    #endif
 
 
 }
@@ -375,8 +424,7 @@ void ContentServer::DataSend (Ptr<Socket> socket, uint32_t num)
         std::cout<<"ContentServer---DataSend---will return when there's no socket in LinkList"<<std::endl;
         return;
     }
-        
-    
+            
      
 }
 

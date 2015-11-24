@@ -433,6 +433,8 @@ private:
    */
   TracedCallback<PhyTransmissionStatParameters> m_dlPhyTransmission;
   
+  TracedCallback<PacketsFromMacToPhy> m_dlPackets; //JMS add as a trace source
+  
   
 
 }; // end of `class LteEnbPhy`

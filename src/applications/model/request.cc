@@ -140,6 +140,8 @@ Request::StartApplication (void)
 {
   NS_LOG_FUNCTION (this);
   std::cout<<"The UE starts at "<<Simulator::Now ().GetSeconds ()<<std::endl;
+  
+  
   double mean = 3.14;
   double bound = 10;
   
@@ -181,6 +183,25 @@ void
 Request::Send (Ptr<Socket> socket)
 {
   NS_LOG_FUNCTION (this);
+  
+  //JMS 10.20 add to get the contentBytes...start
+  std::list<Link>::iterator iter; 
+  for (iter = LinkListUE.begin(); iter != LinkListUE.end(); ++iter)
+  {
+    if(iter->socket == socket)
+      {
+          std::cout<<"There's a socket in LinkListUE!"<<std::endl;
+          break;
+      }        
+  }
+  
+  if(iter == LinkListUE.end() && iter->socket!= socket)
+  {
+       std::cout<<"There is no inter->socket == socket in LinkListUE!"<<std::endl;
+       return;  //return语句！ 强制结束当前函数
+  }
+  //JMS 10.20 add to get the contentBytes...end 
+  
   SeqTsHeader seqTs;
   seqTs.SetSeq (m_sent);
   
@@ -199,14 +220,20 @@ Request::Send (Ptr<Socket> socket)
   if(value >0 && value <=0.2)
   {
     buf[0] = '1';
+    iter->contentBytes = 1024*100;
+    std::cout<<"Request("<<this<<") will request for 1024*100 bytes"<<std::endl; 
   }
-  else if (value >0.3 && value <= 0.8)
+  else if (value >0.2 && value <= 0.90)
   {
     buf[0] = '2';
+    iter->contentBytes = 1024*1024*30;
+    std::cout<<"Request("<<this<<") will request for 1024*1024*30 bytes"<<std::endl;
   }
   else
   {
     buf[0] = '3';
+    iter->contentBytes = 1024*1024*500;
+    std::cout<<"Request("<<this<<") will request for 1024*1024*500 bytes"<<std::endl;
   }
  
   //JMS add the uniform random variable to create the random content type in the user request...end
@@ -250,6 +277,29 @@ void Request::HandleRead (Ptr<Socket> socket)
   NS_LOG_FUNCTION (this << socket);
   Ptr<Packet> packet;
   Address from;
+  
+  //JMS 10.20 find the content info that the socket relate to ,START
+  
+  std::list<Link>::iterator iter; 
+  for (iter = LinkListUE.begin(); iter != LinkListUE.end(); ++iter)
+  {
+    if(iter->socket == socket)
+      {
+          std::cout<<"There's a socket in LinkListUE!"<<std::endl;
+          break;
+      }        
+  }
+  
+  if(iter == LinkListUE.end() && iter->socket!= socket)
+  {
+       std::cout<<"There is no inter->socket == socket in LinkListUE!"<<std::endl;
+       return;  //return语句！ 强制结束当前函数
+  }
+  
+  //JMS 10.20 find the content info that the socket relate to ,END
+  
+  
+  
   Ptr<Ipv4> p = Request::GetNode()->GetObject<Ipv4> (); //如何打印当前收包的UE的IP? 不知对不对
   //"<< p->GetAddress(1,0).GetLocal () <<"
   while ((packet = socket->RecvFrom (from)))
@@ -258,7 +308,9 @@ void Request::HandleRead (Ptr<Socket> socket)
         { //EOF
           break;
         }
-      m_totalRx += packet->GetSize ();
+      iter->totBytes += packet->GetSize ();
+           
+      
       if (InetSocketAddress::IsMatchingType (from))
         {
           NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds ()
@@ -266,8 +318,18 @@ void Request::HandleRead (Ptr<Socket> socket)
                        <<  packet->GetSize () << " bytes from "
                        << InetSocketAddress::ConvertFrom(from).GetIpv4 ()
                        << " port " << InetSocketAddress::ConvertFrom (from).GetPort ()
-                       << " total Rx " << m_totalRx << " bytes");
+                       << " have received " << iter->totBytes << " bytes");
         }
+        
+        
+      if (iter->totBytes == iter->contentBytes)
+      {
+        iter->socket->Close (); //close the socket upon total receiving the content
+        std::cout<<"The UE "<<p->GetAddress(1,0).GetLocal ()<<"has finished receiving "<<iter->contentBytes<<" Bytes content"<<std::endl;
+        LinkListUE.erase(iter); //delete the socket and relate info from the linklist
+        
+        
+      }
       
     }
 } //HandleRead
@@ -275,26 +337,7 @@ void Request::HandleRead (Ptr<Socket> socket)
 
 void Request::HandlePeerClose (Ptr<Socket> socket)
 {
-  //Close the socket and erase the socket in the m_socketList
   NS_LOG_FUNCTION (this << socket);
-  socket->Close();
-  std::list<Ptr<Socket> >::iterator iter;
-  for (iter = m_socketList.begin(); iter != m_socketList.end(); ++iter)
-  {
-      if(*iter == socket)
-      {
-          std::cout<<"Request---There's a socket in m_socketList, going to delete it"<<std::endl;
-          break;
-      }        
-  }
-  
-  if(iter == m_socketList.end() && *iter!= socket)
-  {
-       std::cout<<"Request---There is no inter->socket == socket in m_socketList!"<<std::endl;
-       return;  //return语句！ 强制结束当前函数
-  }
-  
-  m_socketList.erase(iter);
  
 }
 
@@ -330,61 +373,71 @@ void Request::randomSocketCreat()
     MakeCallback (&Request::HandlePeerClose, this),
     MakeCallback (&Request::HandlePeerError, this)); 
     
-  m_socketList.push_back(socketToUse); 
+  //JMS 10.20 start 
+  Link linknew; 
+  linknew.socket = socketToUse; //give the socket pointer to the link element         
+  linknew.totBytes = 0;  //initialize the total receive bytes
+  linknew.contentBytes = 0; //initialize the total contentbytes bytes
+  
+  LinkListUE.push_back(linknew); //finish creating a socket and initialize the content information related to it 10.20
+  //JMS 10.20 end
   
   double now_minute = Simulator::Now().GetMinutes(); //取仿真时间，决定下个req与刚发出去的req之间的间隔均值（的倒数）
-  double now_slotnum = floor(now_minute/30); //slot number start from 0 to 5; simtime = 60 mins
+  double now_slotnum = floor(now_minute/15); //slot number start from 0 to 5; simtime = 60 mins
   //std::cout<<"Request.cc----now_minute = "<< now_minute<<", "<<"now_slotnum = "<< now_slotnum<<std::endl;
   //std::cout<<"request.cc---- now_slotnum = "<< floor(now_slotnum)<<std::endl; //floor() 向下取整
   double mean,bound;
   
   switch ((int)now_slotnum)
   {
+    
+    
     case 0 :
     {
         std::cout<<"request.cc in case 0 "<<std::endl;
-        mean = 24;
-        bound = 26;
+        mean = 12;
+        bound = 13;
         break;
     }
     
     case 1 :
     {
         std::cout<<"request.cc in case 1 "<<std::endl;
-        mean = 19.6;
-        bound = 22.8;
+        mean = 9.8;
+        bound = 11.4;
         break;
     }
+    
     
     case 2 :
     {
         std::cout<<"request.cc in case 2 "<<std::endl;
-        mean = 24;
-        bound = 26 ;
+        mean = 12.2;
+        bound = 13.2 ;
         break;
     }
     
     case 3 :
     {
         std::cout<<"request.cc in case 3 "<<std::endl;
-        mean = 25.2;
-        bound = 26.4;
+        mean = 12.6;
+        bound = 13.2;
         break;
     }
     
     case 4 :
     {
         std::cout<<"request.cc in case 4 "<<std::endl;
-        mean = 25.2;
-        bound = 26.4;
+        mean = 12.6;
+        bound = 13.2;
         break;
     }
     
     case 5 :
     {
         std::cout<<"request.cc in case 5 "<<std::endl;
-        mean = 22;
-        bound = 24;
+        mean = 11;
+        bound = 12;
         break;
     }
     
@@ -392,96 +445,96 @@ void Request::randomSocketCreat()
     case 6 :
     {
         std::cout<<"request.cc in case 6 "<<std::endl;
-        mean = 15;
-        bound = 18;
+        mean = 11.5;
+        bound = 12;
         break;
     }
     
     case 7 :
     {
         std::cout<<"request.cc in case 7 "<<std::endl;
-        mean = 14;
-        bound = 15;
+        mean = 9.8;
+        bound = 10.5;
         break;
     }
     
     case 8 :
     {
         std::cout<<"request.cc in case 8 "<<std::endl;
-        mean = 11;
-        bound = 12;
+        mean = 3.5;
+        bound = 4;
         break;
     }
     
     case 9 :
     {
         std::cout<<"request.cc in case 9 "<<std::endl;
-        mean = 9;
-        bound = 10;
+        mean = 1.2;
+        bound = 1.3;
         break;
     }
     
     case 10 :
     {
         std::cout<<"request.cc in case 10 "<<std::endl;
-        mean = 7;
-        bound = 8;
+        mean = 0.95;
+        bound = 1.05;
         break;
     }
     
     case 11 :
     {
         std::cout<<"request.cc in case 11 "<<std::endl;
-        mean = 6;
-        bound = 7;
+        mean = 0.8;
+        bound = 0.85;
         break;
     }
     
     case 12 :
     {
         std::cout<<"request.cc in case 12 "<<std::endl;
-        mean = 5;
-        bound = 6;
+        mean = 0.65;
+        bound = 0.7;
         break;
     }
     
     case 13 :
     {
         std::cout<<"request.cc in case 13 "<<std::endl;
-        mean = 3.5;
-        bound = 4.5;
+        mean = 0.5;
+        bound = 0.6;
         break;
     }
     
     case 14 :
     {
         std::cout<<"request.cc in case 14 "<<std::endl;
-        mean = 2.5;
-        bound = 3;
+        mean = 0.4;
+        bound = 0.5;
         break;
     }
     
     case 15 :
     {
         std::cout<<"request.cc in case 15 "<<std::endl;
-        mean = 2;
-        bound = 2.5;
+        mean = 0.65;
+        bound = 0.7;
         break;
     }
     
     case 16 :
     {
         std::cout<<"request.cc in case 16 "<<std::endl;
-        mean = 1;
-        bound = 1.5;
+        mean = 0.3;
+        bound = 0.45;
         break;
     }
     
     case 17 :
     {
         std::cout<<"request.cc in case 17 "<<std::endl;
-        mean = 0.4;
-        bound = 0.5;
+        mean = 0.28;
+        bound = 0.3;
         break;
     }
     
@@ -489,31 +542,31 @@ void Request::randomSocketCreat()
     case 18 :
     {
         std::cout<<"request.cc in case 18 "<<std::endl;
-        mean = 0.3;
-        bound = 0.45;
+        mean = 0.275;
+        bound = 0.28;
         break;
     }
     
     case 19 :
     {
         std::cout<<"request.cc in case 19 "<<std::endl;
-        mean = 0.65;
-        bound = 0.7;
+        mean = 0.4;
+        bound = 0.55;
         break;
     }
     
     case 20 :
     {
         std::cout<<"request.cc in case 20 "<<std::endl;
-        mean = 0.95;
-        bound = 1;
+        mean = 0.65;
+        bound = 0.75;
         break;
     }
     
     case 21 :
     {
         std::cout<<"request.cc in case 21 "<<std::endl;
-        mean = 1.2;
+        mean = 0.9;
         bound = 1.3;
         break;
     }
@@ -533,8 +586,7 @@ void Request::randomSocketCreat()
         bound = 1.6;
         break;
     }
-    
-    
+          
     
   }
   

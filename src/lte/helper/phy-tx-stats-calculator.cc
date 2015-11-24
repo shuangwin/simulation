@@ -237,7 +237,7 @@ void
 PhyTxStatsCalculator::DlPackets(PacketsFromMacToPhy params)
 {
     
-    std::cout<<"In the sink function!"<<std::endl;
+    std::cout<<"PhyTxStatsCalculator::DlPackets()-----In the sink function!"<<std::endl;
     std::ofstream outFile;
     if ( m_dlpktFirstWrite == true )
     {
@@ -268,7 +268,7 @@ PhyTxStatsCalculator::DlPackets(PacketsFromMacToPhy params)
     
     outFile.close ();
     
-    std::cout<<"Writing into the file finish!"<<std::endl;
+    std::cout<<"PhyTxStatsCalculator::DlPackets()----Writing into the file finish!"<<std::endl;
 }
 
 
